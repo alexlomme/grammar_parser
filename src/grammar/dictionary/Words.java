@@ -3,7 +3,9 @@ package grammar.dictionary;
 public enum Words {
     VAR,
     NUM,
-    OP,
+    OP_1,
+    OP_2,
+    OP_3,
     EQ,
     IF,
     END,

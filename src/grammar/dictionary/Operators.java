@@ -10,6 +10,8 @@ public enum Operators {
 
     public final char label;
 
+    public static final int MAX_PRIORITY = 3;
+
     private Operators(char label) {
         this.label = label;
     }
@@ -30,6 +32,14 @@ public enum Operators {
             case '>' -> Operators.COMPARISON_GREATER;
             case '<' -> Operators.COMPARISON_SMALLER;
             default -> null;
+        };
+    }
+
+    public static int priority(Operators operator) {
+        return switch(operator) {
+            case PRODUCT, DIVISION -> 3;
+            case ADDITION, SUBTRACTION -> 2;
+            default -> 1;
         };
     }
 }

@@ -57,11 +57,11 @@ public class Parser {
                         break;
                     }
                     case END: {
-                        newState = ParseState.END_LIST;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_LIST);
                         break;
                     }
                     case PROGRAM_END: {
-                        newState = ParseState.PROGRAM_END;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_PROGRAM);
                         break;
                     }
                     default: {
@@ -104,7 +104,9 @@ public class Parser {
             }
             case EXPRESSION: {
                 switch(dictionary.get(fToken)) {
-                    case OP: {
+                    case OP_1:
+                    case OP_2:
+                    case OP_3: {
                         newTokenOnStack = new Operator(Operators.convert(token.charAt(0)));
                         newState = ParseState.OPERATOR;
                         break;
@@ -112,29 +114,29 @@ public class Parser {
                     case VAR: {
                         newTokenOnStack = new Variable(token.charAt(0));
                         newVarOnStack = StackAlphabet.ASSIGNMENT;
-                        newState = ParseState.NEW_ASSIGNMENT;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_ASG);
                         break;
                     }
                     case RB: {
-                        newState = ParseState.RIGHT_BRACKET;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_RB);
                         break;
                     }
                     case IF: {
                         newVarOnStack = StackAlphabet.BLOCK;
-                        newState = ParseState.NEW_BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
                         break;
                     }
                     case WHILE: {
                         newVarOnStack = StackAlphabet.WHILE_BLOCK;
-                        newState = ParseState.NEW_BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
                         break;
                     }
                     case END: {
-                        newState = ParseState.END;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_END);
                         break;
                     }
                     case PROGRAM_END: {
-                        newState = ParseState.PROGRAM_END;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_PROGRAM);
                         break;
                     }
                     default: {
@@ -147,12 +149,150 @@ public class Parser {
                 switch(dictionary.get(fToken)) {
                     case NUM: {
                         parseStack.push(new Constant(Integer.parseInt(token)));
-                        newState = ParseState.OPERATOR_EXPRESSION;
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_2;
                         break;
                     }
                     case VAR: {
                         parseStack.push(new Variable(token.charAt(0)));
-                        newState = ParseState.OPERATOR_EXPRESSION;
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_2;
+                        break;
+                    }
+                    case LB: {
+                        newVarOnStack = StackAlphabet.BRACKET;
+                        newState = ParseState.EXPRESSION_HOLDER;
+                        break;
+                    }
+                    default: {
+                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression after operator expected\n");
+                    }
+                }
+                break;
+            }
+            case EXPRESSION_2: {
+                switch(dictionary.get(fToken)) {
+                    case OP_1:
+                    case OP_2:
+                    case OP_3: {
+                        newTokenOnStack = new Operator(Operators.convert(token.charAt(0)));
+                        newState = ParseState.OPERATOR_2;
+                        break;
+                    }
+                    case VAR: {
+                        newTokenOnStack = new Variable(token.charAt(0));
+                        newVarOnStack = StackAlphabet.ASSIGNMENT;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_ASG);
+                        break;
+                    }
+                    case RB: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_RB);
+                        break;
+                    }
+                    case IF: {
+                        newVarOnStack = StackAlphabet.BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
+                        break;
+                    }
+                    case WHILE: {
+                        newVarOnStack = StackAlphabet.WHILE_BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
+                        break;
+                    }
+                    case END: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_END);
+                        break;
+                    }
+                    case PROGRAM_END: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_PROGRAM);
+                        break;
+                    }
+                    default: {
+                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Operator, new statement or end expected\n");
+                    }
+                }
+                break;
+            }
+            case OPERATOR_2: {
+                switch(dictionary.get(fToken)) {
+                    case NUM: {
+                        parseStack.push(new Constant(Integer.parseInt(token)));
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_3;
+                        break;
+                    }
+                    case VAR: {
+                        parseStack.push(new Variable(token.charAt(0)));
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_3;
+                        break;
+                    }
+                    case LB: {
+                        newVarOnStack = StackAlphabet.BRACKET;
+                        newState = ParseState.EXPRESSION_HOLDER;
+                        break;
+                    }
+                    default: {
+                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression after operator expected\n");
+                    }
+                }
+                break;
+            }
+            case EXPRESSION_3: {
+                switch(dictionary.get(fToken)) {
+                    case OP_1:
+                    case OP_2:
+                    case OP_3: {
+                        newTokenOnStack = new Operator(Operators.convert(token.charAt(0)));
+                        newState = ParseState.OPERATOR_3;
+                        break;
+                    }
+                    case VAR: {
+                        newTokenOnStack = new Variable(token.charAt(0));
+                        newVarOnStack = StackAlphabet.ASSIGNMENT;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_ASG);
+                        break;
+                    }
+                    case RB: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_RB);
+                        break;
+                    }
+                    case IF: {
+                        newVarOnStack = StackAlphabet.BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
+                        break;
+                    }
+                    case WHILE: {
+                        newVarOnStack = StackAlphabet.WHILE_BLOCK;
+                        stateStack.push(StackAlphabet.EXPRESSION_END_BLOCK);
+                        break;
+                    }
+                    case END: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_END);
+                        break;
+                    }
+                    case PROGRAM_END: {
+                        stateStack.push(StackAlphabet.EXPRESSION_END_PROGRAM);
+                        break;
+                    }
+                    default: {
+                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Operator, new statement or end expected\n");
+                    }
+                }
+                break;
+            }
+            case OPERATOR_3: {
+                switch(dictionary.get(fToken)) {
+                    case NUM: {
+                        parseStack.push(new Constant(Integer.parseInt(token)));
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_4;
+                        break;
+                    }
+                    case VAR: {
+                        parseStack.push(new Variable(token.charAt(0)));
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = ParseState.EXPRESSION_4;
                         break;
                     }
                     case LB: {
@@ -183,18 +323,175 @@ public class Parser {
     }
 
     private static ParseState reduce(ParseState state, Stack<GrammarVariable> parseStack, Stack<StackAlphabet> stateStack) {
-        if (!reducible(state)) {
-            return state;
-        }
         ParseState newState = state;
 
         switch(state) {
-            case NEW_ASSIGNMENT: {
-                newState = ParseState.ASSIGNMENT;
+            case EXPRESSION_4: {
+                if (stateStack.size() < 6 && parseStack.size() < 7) {
+                    throw new RuntimeException("Internal error: stack size smaller than expected\n");
+                }
 
+                boolean red = false;
+
+                GrammarVariable exp4 = parseStack.pop();
+                GrammarVariable op3 = parseStack.pop();
+                GrammarVariable exp3 = parseStack.pop();
+                GrammarVariable op2 = parseStack.pop();
+                GrammarVariable exp2 = parseStack.pop();
+                StackAlphabet potentialEndExpression = stateStack.pop();
+                if (isEndExpression(potentialEndExpression)) {
+                    stateStack.pop();
+                }
+
+                if (exp4 instanceof Expression expression4 && exp3 instanceof Expression expression3 && exp2 instanceof Expression expression2 &&
+                        op2 instanceof Operator operator2 && op3 instanceof Operator operator3) {
+                    newState = ParseState.EXPRESSION_3;
+                    ExpressionProduct product;
+                    if (operator3.priority() > operator2.priority()) {
+                        product = new ExpressionProduct(expression3, expression4, operator3);
+                        parseStack.push(expression2);
+                        parseStack.push(operator2);
+                        parseStack.push(product);
+                    } else {
+                        product = new ExpressionProduct(expression2, expression3, operator2);
+                        parseStack.push(product);
+                        parseStack.push(operator3);
+                        parseStack.push(expression4);
+                        if (operator3.priority() < operator2.priority()) {
+                            red = true;
+                        }
+                    }
+                    if (isEndExpression(potentialEndExpression)) {
+                        stateStack.push(potentialEndExpression);
+                    }
+                } else {
+                    throw new RuntimeException("Internal error: false stack content\n");
+                }
+                if (!isEndExpression(potentialEndExpression) && !red) {
+                    break;
+                }
+            }
+            case EXPRESSION_3: {
+                if (stateStack.size() < 4 && parseStack.size() < 5) {
+                    throw new RuntimeException("Internal error: stack size smaller than expected\n");
+                }
+
+                StackAlphabet potentialEndExpression = stateStack.pop();
+
+                GrammarVariable exp3 = parseStack.pop();
+                GrammarVariable op2 = parseStack.pop();
+                GrammarVariable exp2 = parseStack.pop();
+                GrammarVariable op1 = parseStack.pop();
+                GrammarVariable exp1 = parseStack.pop();
+                if (isEndExpression(potentialEndExpression)) {
+                    stateStack.pop();
+                }
+                stateStack.pop();
+
+                if (exp1 instanceof Expression expression1 && exp2 instanceof Expression expression2 && exp3 instanceof Expression expression3
+                        && op1 instanceof Operator operator1 && op2 instanceof Operator operator2) {
+                    if (operator2.priority() == Operators.MAX_PRIORITY || (isEndExpression(potentialEndExpression) && operator2.priority() > operator1.priority())) {
+                        newState = ParseState.EXPRESSION_2;
+                        Expression product = new ExpressionProduct(expression2, expression3, operator2);
+                        parseStack.push(exp1);
+                        parseStack.push(op1);
+                        parseStack.push(product);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        if (isEndExpression(potentialEndExpression)) {
+                            stateStack.push(potentialEndExpression);
+                        }
+                    } else if (operator1.priority() >= operator2.priority()) {
+                        newState = ParseState.EXPRESSION_2;
+                        ExpressionProduct product = new ExpressionProduct(expression1, expression2, operator1);
+                        parseStack.push(product);
+                        parseStack.push(operator2);
+                        parseStack.push(expression3);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                    } else {
+                        parseStack.push(expression1);
+                        parseStack.push(operator1);
+                        parseStack.push(expression2);
+                        parseStack.push(operator2);
+                        parseStack.push(expression3);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                    }
+                } else {
+                    throw new RuntimeException("Internal error: stack content not as expected\n");
+                }
+                if (!isEndExpression(potentialEndExpression)) {
+                    break;
+                } else {
+                    stateStack.push(potentialEndExpression);
+                }
+            }
+            case EXPRESSION_2: {
+                if (parseStack.size() < 3 && stateStack.size() < 3) {
+                    throw new RuntimeException("Internal error: parse stack smaller than expected\n");
+                }
+
+                StackAlphabet potentialEndExpression = stateStack.pop();
+
+                GrammarVariable expectedExpressionSecond = parseStack.pop();
+                GrammarVariable expectedOperator = parseStack.pop();
+                GrammarVariable expectedExpressionFirst = parseStack.pop();
+
+                if (expectedExpressionFirst  instanceof Expression expression1 && expectedExpressionSecond instanceof Expression expression2 && expectedOperator instanceof Operator operator) {
+                    if (isEndExpression(potentialEndExpression) || operator.priority() == Operators.MAX_PRIORITY) {
+                        newState = ParseState.EXPRESSION;
+                        ExpressionProduct product = new ExpressionProduct(expression1, expression2, operator);
+                        parseStack.push(product);
+                        if (isEndExpression(potentialEndExpression)) {
+                            stateStack.pop();
+                        }
+                    } else {
+                        parseStack.push(expression1);
+                        parseStack.push(operator);
+                        parseStack.push(expression2);
+                        stateStack.push(potentialEndExpression);
+                    }
+                } else {
+                    throw new RuntimeException("incorrect stack trace for expression product" + "\n");
+                }
+                if (isEndExpression(potentialEndExpression)) {
+                    stateStack.push(potentialEndExpression);
+                } else {
+                    break;
+                }
+            }
+            case INITIAL:
+            case EXPRESSION: {
+                if (stateStack.isEmpty()) {
+                    throw new RuntimeException("Internal error: stack smaller than expected\n");
+                }
+                StackAlphabet potentialEndExpression = stateStack.pop();
+                if (isEndExpression(potentialEndExpression)) {
+                    stateStack.push(potentialEndExpression);
+                    newState = reduceStatement(newState, parseStack, stateStack);
+                } else {
+                    stateStack.push(potentialEndExpression);
+                }
+                break;
+            }
+        }
+        return newState;
+    }
+
+    private static ParseState reduceStatement(ParseState state, Stack<GrammarVariable> parseStack, Stack<StackAlphabet> stateStack) {
+        if (stateStack.isEmpty()) {
+            throw new RuntimeException("");
+        }
+
+        ParseState newState = state;
+
+        StackAlphabet token = stateStack.pop();
+        switch(token) {
+            case EXPRESSION_END_ASG: {
                 if (stateStack.size() < 2) {
                     throw new RuntimeException("Reduce error: stack smaller than expected\n");
                 }
+
+                newState = ParseState.ASSIGNMENT;
 
                 stateStack.pop();
                 StackAlphabet lastAction = stateStack.pop();
@@ -229,7 +526,7 @@ public class Parser {
                 }
                 break;
             }
-            case NEW_BLOCK: {
+            case EXPRESSION_END_BLOCK: {
                 newState = ParseState.EXPRESSION_HOLDER;
 
                 if (stateStack.size() < 2) {
@@ -269,9 +566,7 @@ public class Parser {
                 }
                 break;
             }
-            case END: {
-                newState = ParseState.INITIAL;
-
+            case EXPRESSION_END_END: {
                 if (stateStack.size() < 2 || parseStack.size() < 2) {
                     throw new RuntimeException("Internal error: stack smaller than expected\n");
                 }
@@ -288,7 +583,9 @@ public class Parser {
                     throw new RuntimeException("Incorrect stack trace for assignment while reading end." + "\n");
                 }
             }
-            case END_LIST: {
+            case EXPRESSION_END_LIST: {
+                newState = ParseState.INITIAL;
+
                 if (parseStack.isEmpty() || stateStack.size() < 2) {
                     throw new RuntimeException("Internal error: stack smaller than expected\n");
                 }
@@ -324,60 +621,72 @@ public class Parser {
                 }
                 break;
             }
-            case RIGHT_BRACKET: {
-                if (parseStack.isEmpty() || stateStack.size() < 2) {
+            case EXPRESSION_END_RB: {
+                if (stateStack.size() < 3 && parseStack.isEmpty()) {
                     throw new RuntimeException("Internal error: stack smaller than expected");
                 }
 
-                GrammarVariable expectedExpression = parseStack.pop();
-                stateStack.pop();
-                StackAlphabet bracket = stateStack.pop();
+                StackAlphabet e = stateStack.pop();
+                StackAlphabet b = stateStack.pop();
 
-                if (bracket == StackAlphabet.BRACKET && expectedExpression instanceof Expression expression) {
-                    BracketExpression bracketExpression = new BracketExpression(expression);
+                GrammarVariable expr = parseStack.pop();
+                BracketExpression bracketExpression;
+                if (expr instanceof Expression expression && e == StackAlphabet.EXPRESSION && b == StackAlphabet.BRACKET) {
+                    bracketExpression = new BracketExpression(expression);
+                    parseStack.push(bracketExpression);
+                } else {
+                    throw new RuntimeException("");
+                }
 
+                StackAlphabet potExpression3 = stateStack.pop();
+
+                if (potExpression3 == StackAlphabet.EXPRESSION) {
                     if (stateStack.isEmpty()) {
                         throw new RuntimeException("Internal error: reduce stack smaller than expected\n");
                     }
 
-                    StackAlphabet actionBeforeBrackets = stateStack.pop();
-                    if (actionBeforeBrackets == StackAlphabet.EXPRESSION) {
-                        newState = ParseState.OPERATOR_EXPRESSION;
+                    StackAlphabet potExpression2 = stateStack.pop();
+                    if (potExpression2 == StackAlphabet.EXPRESSION) {
+                        if (stateStack.isEmpty()) {
+                            throw new RuntimeException("Internal error: reduce stack smaller than expected\n");
+                        }
+
+                        StackAlphabet potExpression1 = stateStack.pop();
+
+                        if (potExpression1 == StackAlphabet.EXPRESSION) {
+
+                            StackAlphabet previousAction = stateStack.pop();
+                            if (previousAction != StackAlphabet.EXPRESSION) {
+                                stateStack.push(previousAction);
+                                stateStack.push(StackAlphabet.EXPRESSION);
+                                stateStack.push(StackAlphabet.EXPRESSION);
+                                stateStack.push(StackAlphabet.EXPRESSION);
+                                stateStack.push(StackAlphabet.EXPRESSION);
+                                newState = reduce(ParseState.EXPRESSION_4, parseStack, stateStack);
+                            } else {
+                                throw new RuntimeException("Internal error: stack content not as expected\n");
+                            }
+                        } else {
+                            stateStack.push(potExpression1);
+                            stateStack.push(StackAlphabet.EXPRESSION);
+                            stateStack.push(StackAlphabet.EXPRESSION);
+                            stateStack.push(StackAlphabet.EXPRESSION);
+                            newState = reduce(ParseState.EXPRESSION_3, parseStack, stateStack);
+                        }
                     } else {
-                        newState = ParseState.EXPRESSION;
-                        stateStack.push(actionBeforeBrackets);
+                        stateStack.push(potExpression2);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        stateStack.push(StackAlphabet.EXPRESSION);
+                        newState = reduce(ParseState.EXPRESSION_2, parseStack, stateStack);
                     }
-                    stateStack.push(StackAlphabet.EXPRESSION);
-                    parseStack.push(bracketExpression);
                 } else {
-                    throw new RuntimeException("Incorrect stack trace. Expected left bracket" + "\n");
-                }
-                if (newState != ParseState.OPERATOR_EXPRESSION) {
-                    break;
-                }
-            }
-            case OPERATOR_EXPRESSION: {
-                newState = ParseState.EXPRESSION;
-
-                if (parseStack.size() < 3 && stateStack.isEmpty()) {
-                    throw new RuntimeException("Internal error: parse stack smaller than expected\n");
-                }
-
-                GrammarVariable expectedExpressionSecond = parseStack.pop();
-                GrammarVariable expectedOperator = parseStack.pop();
-                GrammarVariable expectedExpressionFirst = parseStack.pop();
-                StackAlphabet expression = stateStack.pop();
-
-                if (expectedExpressionFirst  instanceof Expression expression1 && expectedExpressionSecond instanceof Expression expression2 && expectedOperator instanceof Operator operator && expression == StackAlphabet.EXPRESSION) {
-                    ExpressionProduct product = new ExpressionProduct(expression1, expression2, operator);
-                    parseStack.push(product);
+                    stateStack.push(potExpression3);
                     stateStack.push(StackAlphabet.EXPRESSION);
-                } else {
-                    throw new RuntimeException("incorrect stack trace for expression product" + "\n");
+                    newState = ParseState.EXPRESSION;
                 }
                 break;
             }
-            case PROGRAM_END: {
+            case EXPRESSION_END_PROGRAM: {
 
                 if (parseStack.isEmpty() && stateStack.isEmpty()) {
                     throw new RuntimeException("Internal error: stack smaller than expected\n");
@@ -399,18 +708,8 @@ public class Parser {
                 }
                 break;
             }
-            default: {
-                throw new RuntimeException("Irreducible state " + state + "\n");
-            }
         }
         return newState;
-    }
-
-    private static boolean reducible(ParseState state) {
-        return switch (state) {
-            case NEW_ASSIGNMENT, NEW_BLOCK, END, END_LIST, OPERATOR_EXPRESSION, RIGHT_BRACKET, PROGRAM_END -> true;
-            default -> false;
-        };
     }
 
     private static String formatToken(String token) {
@@ -420,7 +719,8 @@ public class Parser {
                 return "var";
             }
             if (Operators.isOperator(c)) {
-                return "op";
+                Operators operator = Operators.convert(c);
+                return "op" + Operators.priority(operator);
             }
         }
 
@@ -434,7 +734,7 @@ public class Parser {
 
     private static String[] tokenize(String input) {
         String formattedInput = input.toLowerCase()
-                .replaceAll("\\n", "")
+                .replaceAll("\\n", " ")
                 .replaceAll("\\(", " ( ")
                 .replaceAll("\\)", " ) ")
                 .replaceAll("=", " = ")
@@ -470,6 +770,13 @@ public class Parser {
             stateStack.push(StackAlphabet.LIST);
         }
     }
+
+    private static boolean isEndExpression(StackAlphabet var) {
+        return switch(var) {
+            case EXPRESSION_END_ASG, EXPRESSION_END_BLOCK, EXPRESSION_END_RB, EXPRESSION_END_END, EXPRESSION_END_LIST, EXPRESSION_END_PROGRAM -> true;
+            default -> false;
+        };
+    }
 }
 
 enum StackAlphabet {
@@ -478,7 +785,13 @@ enum StackAlphabet {
     BLOCK,
     WHILE_BLOCK,
     ASSIGNMENT,
-    LIST
+    LIST,
+    EXPRESSION_END_ASG,
+    EXPRESSION_END_END,
+    EXPRESSION_END_LIST,
+    EXPRESSION_END_RB,
+    EXPRESSION_END_BLOCK,
+    EXPRESSION_END_PROGRAM,
 
 }
 
@@ -488,11 +801,9 @@ enum ParseState {
     EXPRESSION_HOLDER,
     EXPRESSION,
     OPERATOR,
-    OPERATOR_EXPRESSION,
-    NEW_ASSIGNMENT,
-    NEW_BLOCK,
-    END,
-    END_LIST,
-    RIGHT_BRACKET,
-    PROGRAM_END
+    EXPRESSION_2,
+    OPERATOR_2,
+    EXPRESSION_3,
+    OPERATOR_3,
+    EXPRESSION_4,
 }

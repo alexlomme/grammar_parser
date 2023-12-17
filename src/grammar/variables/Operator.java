@@ -9,6 +9,10 @@ public class Operator implements GrammarVariable {
         this.operator = operator;
     }
 
+    public int priority() {
+        return Operators.priority(this.operator);
+    }
+
     public String toString() {
         return "" + operator.label;
     }
