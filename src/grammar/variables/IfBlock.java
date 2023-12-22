@@ -11,6 +11,13 @@ public class IfBlock extends Statement {
         this.statementList = statementList;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public StatementList getStatementList() {
+        return statementList;
+    }
     @Override
     public String toString() {
         return "if " + this.expression.toString() + " " + this.statementList.toString() + " end";

@@ -9,6 +9,13 @@ public class Assignment extends Statement {
         this.expression = expression;
     }
 
+    public Variable getVariable() {
+        return variable;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
     @Override
     public String toString() {
         return this.variable.toString() + " = " + this.expression.toString();

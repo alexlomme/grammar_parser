@@ -10,7 +10,15 @@ import java.util.Stack;
 
 public class Parser {
     public static Program parse(String input) {
+        if (input == null || input.isEmpty()) {
+            throw new RuntimeException("Empty input\n");
+        }
+
         String[] tokens = tokenize(input);
+
+        if (tokens.length == 0) {
+            throw new RuntimeException("No elements after tokenizing");
+        }
 
         Stack<GrammarVariable> parseStack = new Stack<>();
         ParseState state = ParseState.INITIAL;
@@ -24,7 +32,7 @@ public class Parser {
         if (expectedList instanceof StatementList list && parseStack.empty()) {
             return list;
         } else {
-            throw new RuntimeException("Incorrect stack content\n");
+            throw new RuntimeException("Stack cannot be reduced to program\n");
         }
     }
 
@@ -64,7 +72,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Statement expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Statement expected (variable, if or while)\n");
                     }
                 }
                 break;
@@ -73,7 +81,7 @@ public class Parser {
                 if (dictionary.get(fToken) == Words.EQ) {
                     newState = ParseState.EXPRESSION_HOLDER;
                 } else {
-                    throw new RuntimeException("Incorrect token " + fToken + ". = expected\n");
+                    throw new RuntimeException("Incorrect token " + fToken + ". \"=\" expected\n");
                 }
                 break;
             }
@@ -94,7 +102,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Expression expected (var, const or right paren)\n");
                     }
                 }
                 break;
@@ -137,7 +145,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Operator, new statement or end expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Operator or new statement or \"end\" expected\n");
                     }
                 }
                 break;
@@ -160,7 +168,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression after operator expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Expression after operator expected\n");
                     }
                 }
                 break;
@@ -203,7 +211,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Operator, new statement or end expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Operator, new statement or \"end\" expected\n");
                     }
                 }
                 break;
@@ -226,7 +234,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression after operator expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Expression after operator expected\n");
                     }
                 }
                 break;
@@ -269,7 +277,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Operator, new statement or end expected\n");
+                        throw new RuntimeException("Incorrect token " + token + ". Operator, new statement or end expected\n");
                     }
                 }
                 break;
@@ -316,7 +324,7 @@ public class Parser {
         switch(state) {
             case EXPRESSION_4: {
                 if (parseStack.size() < 8) {
-                    throw new RuntimeException("Internal error: stack size smaller than expected\n");
+                    throw new RuntimeException("Internal error: stack size smaller than expected in state EXPRESSION_4\n");
                 }
 
                 boolean red = false;
@@ -328,7 +336,7 @@ public class Parser {
                 } else if (potentialEndExpression instanceof Expression) {
                     expression4 = (Expression) potentialEndExpression;
                 } else {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack content: expression or reduce lexeme on top expected: " + potentialEndExpression.getClass() + "\n");
                 }
 
                 GrammarVariable op3 = parseStack.pop();
@@ -356,7 +364,7 @@ public class Parser {
                         }
                     }
                 } else {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Following stack content expected: exp, op, exp, op");
                 }
                 if (potentialEndExpression instanceof ReduceLexeme) {
                     parseStack.push(potentialEndExpression);
@@ -367,7 +375,7 @@ public class Parser {
             }
             case EXPRESSION_3: {
                 if (parseStack.size() < 6) {
-                    throw new RuntimeException("Internal error: stack size smaller than expected\n");
+                    throw new RuntimeException("Internal error: stack size smaller than expected for state EXPRESSION_3\n");
                 }
 
                 GrammarVariable potentialEndExpression = parseStack.pop();
@@ -377,7 +385,7 @@ public class Parser {
                 } else if (potentialEndExpression instanceof Expression) {
                     expression3 = (Expression) potentialEndExpression;
                 } else {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack content: expression or reduce lexeme expected on top\n");
                 }
 
                 GrammarVariable op2 = parseStack.pop();
@@ -416,7 +424,7 @@ public class Parser {
             }
             case EXPRESSION_2: {
                 if (parseStack.size() < 4) {
-                    throw new RuntimeException("Internal error: parse stack smaller than expected\n");
+                    throw new RuntimeException("Internal error: parse stack smaller than expected for state EXPRESSION_2\n");
                 }
 
                 GrammarVariable potentialEndExpression = parseStack.pop();
@@ -426,7 +434,7 @@ public class Parser {
                 } else if (potentialEndExpression instanceof Expression) {
                     expression2 = (Expression) potentialEndExpression;
                 } else {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack content: expression or reduce lexeme expected on top\n");
                 }
 
                 GrammarVariable expectedOperator = parseStack.pop();
@@ -443,7 +451,7 @@ public class Parser {
                         parseStack.push(expression2);
                     }
                 } else {
-                    throw new RuntimeException("incorrect stack trace for expression product" + "\n");
+                    throw new RuntimeException("incorrect stack trace for expression product: expression and operator expected" + "\n");
                 }
                 if (potentialEndExpression instanceof ReduceLexeme) {
                     parseStack.push(potentialEndExpression);
@@ -454,7 +462,7 @@ public class Parser {
             case INITIAL:
             case EXPRESSION: {
                 if (parseStack.isEmpty()) {
-                    throw new RuntimeException("Internal error: stack smaller than expected\n");
+                    throw new RuntimeException("Internal error: stack is empty. Expression expected\n");
                 }
                 GrammarVariable potentialEndExpression = parseStack.pop();
                 if (potentialEndExpression instanceof ReduceLexeme) {
@@ -471,7 +479,7 @@ public class Parser {
 
     private static ParseState reduceStatement(ParseState state, Stack<GrammarVariable> parseStack) {
         if (parseStack.isEmpty()) {
-            throw new RuntimeException("");
+            throw new RuntimeException("Stack is empty\n");
         }
 
         ParseState newState = state;
@@ -488,14 +496,14 @@ public class Parser {
         switch(reductionSource) {
             case NEW_ASG: {
                 if (parseStack.size() < 2) {
-                    throw new RuntimeException("Reduce error: stack smaller than expected\n");
+                    throw new RuntimeException("Reduce error: expression and statement expected on stack to create new assignment. Stack too small\n");
                 }
 
                 GrammarVariable exp = parseStack.pop();
                 GrammarVariable lex = parseStack.pop();
 
                 if (!(exp instanceof Expression expression && lex instanceof SimpleLexeme lastAction)) {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("incorrect stack content for reduce: expression and lexeme expected\n");
                 }
 
                 newState = ParseState.ASSIGNMENT;
@@ -504,7 +512,7 @@ public class Parser {
                     case ASSIGNMENT: {
 
                         if (parseStack.isEmpty()) {
-                            throw new RuntimeException("Parse error: stack smaller than expected\n");
+                            throw new RuntimeException("Stack empty: variable expected to reduce assignment\n");
                         }
 
                         GrammarVariable expectedVar = parseStack.pop();
@@ -512,7 +520,7 @@ public class Parser {
                             Assignment assignment = new Assignment(var, expression);
                             mergeWithPreviousStatement(assignment, parseStack);
                         } else {
-                            throw new RuntimeException("Internal error: Incorrect stack trace for assignment. " + "\n");
+                            throw new RuntimeException("Internal error: Incorrect stack trace for assignment. Variable expected" + "\n");
                         }
                         break;
                     }
@@ -527,7 +535,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect state stack trace. grammar.variables.Statement expected, got: " + lastAction + "\n");
+                        throw new RuntimeException("Incorrect state stack trace. Lexeme expected, got: " + lastAction + "\n");
                     }
                 }
                 break;
@@ -536,21 +544,21 @@ public class Parser {
                 newState = ParseState.EXPRESSION_HOLDER;
 
                 if (parseStack.size() < 2) {
-                    throw new RuntimeException("Internal error: reduce stack smaller than expected\n");
+                    throw new RuntimeException("Internal error: reduce stack smaller than expected. Expression and lexeme expected to create new block\n");
                 }
 
                 GrammarVariable exp = parseStack.pop();
                 GrammarVariable lex = parseStack.pop();
 
                 if (!(exp instanceof Expression expression && lex instanceof SimpleLexeme lastAction)) {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack content: expression and lexeme expected\n");
                 }
 
                 switch (lastAction) {
                     case ASSIGNMENT: {
 
                         if (parseStack.isEmpty()) {
-                            throw new RuntimeException("Internal error: parse stack smaller than expected\n");
+                            throw new RuntimeException("Stack is empty. Variable expected to reduce assignment\n");
                         }
 
                         GrammarVariable expectedVar = parseStack.pop();
@@ -558,7 +566,7 @@ public class Parser {
                             Assignment assignment = new Assignment(var, expression);
                             mergeWithPreviousStatement(assignment, parseStack);
                         } else {
-                            throw new RuntimeException("Incorrect stack trace for assignment\n");
+                            throw new RuntimeException("Incorrect stack trace for assignment: variable expected\n");
                         }
                         break;
                     }
@@ -573,14 +581,14 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Parse failed" + "\n");
+                        throw new RuntimeException("Incorrect stack trace: lexeme expected. Got: " + lastAction + "\n");
                     }
                 }
                 break;
             }
             case EXPRESSION_END: {
                 if (parseStack.size() < 3) {
-                    throw new RuntimeException("Internal error: stack smaller than expected\n");
+                    throw new RuntimeException("Stack too small. Expression, lexeme and variable expected\n");
                 }
 
                 GrammarVariable exp = parseStack.pop();
@@ -589,7 +597,7 @@ public class Parser {
 
                 if (!(exp instanceof Expression expression && lex instanceof SimpleLexeme lastAction &&
                         lastAction == SimpleLexeme.ASSIGNMENT && var instanceof Variable variable)) {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack trace: expression, lexeme and variable expected\n");
                 }
 
                 Assignment assignment = new Assignment(variable, expression);
@@ -599,7 +607,7 @@ public class Parser {
                 newState = ParseState.INITIAL;
 
                 if (parseStack.size() < 3) {
-                    throw new RuntimeException("Internal error: stack smaller than expected\n");
+                    throw new RuntimeException("Stack smaller than expected: list, expression and lexeme expected\n");
                 }
 
                 GrammarVariable listInBlock = parseStack.pop();
@@ -608,7 +616,7 @@ public class Parser {
 
                 if (!(listInBlock instanceof StatementList list && exp instanceof Expression expression &&
                         lex instanceof SimpleLexeme blockInit && (blockInit == SimpleLexeme.IF_HOLDER || blockInit == SimpleLexeme.WHILE_HOLDER))) {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack content: list, expression and block lexeme expected\n");
                 }
 
                 Statement block;
@@ -622,14 +630,14 @@ public class Parser {
             }
             case RIGHT_PAREN: {
                 if (parseStack.size() < 3) {
-                    throw new RuntimeException("Internal error: stack smaller than expected");
+                    throw new RuntimeException("Stack to small to reduce right paren: expression, lexeme and something more expected\n");
                 }
 
                 GrammarVariable exp = parseStack.pop();
                 GrammarVariable lex = parseStack.pop();
 
                 if (!(exp instanceof Expression expression && lex instanceof SimpleLexeme paren && paren == SimpleLexeme.LEFT_PAREN)) {
-                    throw new RuntimeException("");
+                    throw new RuntimeException("Incorrect stack trace: expression and left paren expected\n");
                 }
 
                 BracketExpression bracketExpression = new BracketExpression(expression);
@@ -639,25 +647,25 @@ public class Parser {
 
                 if (potOperator3 instanceof Operator operator3) {
                     if (parseStack.size() < 2) {
-                        throw new RuntimeException("Internal error: reduce stack smaller than expected\n");
+                        throw new RuntimeException("Stack too small: expression and lexeme expected before operator\n");
                     }
 
                     GrammarVariable exp3 = parseStack.pop();
 
                     if (!(exp3 instanceof Expression expression3)) {
-                        throw new RuntimeException("");
+                        throw new RuntimeException("Incorrect stack trace: expression before operator expected\n");
                     }
 
                     GrammarVariable potOperator2 = parseStack.pop();
                     if (potOperator2 instanceof Operator operator2) {
                         if (parseStack.size() < 2) {
-                            throw new RuntimeException("Internal error: reduce stack smaller than expected\n");
+                            throw new RuntimeException("Stack too small: expression and lexeme expected before operator\n");
                         }
 
                         GrammarVariable exp2 = parseStack.pop();
 
                         if (!(exp2 instanceof Expression expression2)) {
-                            throw new RuntimeException("");
+                            throw new RuntimeException("Incorrect stack trace: expression before operator expected\n");
                         }
 
                         GrammarVariable potOperator1 = parseStack.pop();
@@ -671,7 +679,7 @@ public class Parser {
                             GrammarVariable exp1 = parseStack.pop();
 
                             if (!(exp1 instanceof Expression expression1)) {
-                                throw new RuntimeException("");
+                                throw new RuntimeException("Incorrect stack trace: expression before operator expected\n");
                             }
 
                             GrammarVariable previousAction = parseStack.pop();
@@ -686,7 +694,7 @@ public class Parser {
                                 parseStack.push(bracketExpression);
                                 newState = reduce(ParseState.EXPRESSION_4, parseStack);
                             } else {
-                                throw new RuntimeException("Internal error: stack content not as expected\n");
+                                throw new RuntimeException("Incorrect stack trace: lexeme before expression expected\n");
                             }
                         } else {
                             parseStack.push(potOperator1);
@@ -714,7 +722,7 @@ public class Parser {
             case PROGRAM_END: {
 
                 if (parseStack.isEmpty()) {
-                    throw new RuntimeException("Internal error: stack smaller than expected\n");
+                    throw new RuntimeException("Stack empty before programm end\n");
                 }
 
                 if (parseStack.size() == 1) {
@@ -728,7 +736,7 @@ public class Parser {
                     Assignment assignment = new Assignment(var, expression);
                     mergeWithPreviousStatement(assignment, parseStack);
                 } else {
-                    throw new RuntimeException("incorrect tack trace\n");
+                    throw new RuntimeException("Incorrect stack trace: expression, assignment lexeme and variable expected\n");
                 }
                 break;
             }
@@ -752,6 +760,13 @@ public class Parser {
             int num = Integer.parseInt(token);
             return "num";
         } catch (NumberFormatException e) {
+            if (!token.equals("if") && !token.equals("while")
+                && !token.equals("end") && !token.equals(".")
+                    && !token.equals("=") && !token.equals("(")
+                        && !token.equals(")")) {
+                throw new RuntimeException("No such token in language: " + token + "\n");
+
+            }
             return token;
         }
     }
@@ -790,7 +805,7 @@ public class Parser {
             parseStack.push(statement);
         }
     }
-    
+
 }
 
 enum ParseState {

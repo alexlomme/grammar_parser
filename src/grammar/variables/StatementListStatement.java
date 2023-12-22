@@ -12,6 +12,14 @@ public class StatementListStatement extends StatementList {
         this.statement = statement;
     }
 
+    public StatementList getStatementList() {
+        return statementList;
+    }
+
+    public Statement getStatement() {
+        return statement;
+    }
+
     @Override
     public String toString() {
         return this.statementList.toString() + " " + this.statement.toString();

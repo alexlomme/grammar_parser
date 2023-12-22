@@ -1,4 +1,6 @@
+import grammar.variables.Assignment;
 import grammar.variables.Program;
+import parser.Analyser;
 import parser.Parser;
 
 import java.io.IOException;
@@ -25,9 +27,12 @@ public class Main {
             return;
         }
 
+        Program program = null;
         try {
-            Program program = Parser.parse(input.toString());
-            System.out.println("Parsed successfully");
+            program = Parser.parse(input.toString());
+            System.out.println("Parsed successfully\n");
+            List<Assignment> unused = Analyser.analyseAssignments(program);
+            System.out.println("Analysed\n");
         } catch (RuntimeException e) {
             System.out.println(e.toString());
         }
