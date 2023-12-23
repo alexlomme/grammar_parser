@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Stack;
 
 public class Parser {
+
+    private Parser() {
+
+    }
     public static Program parse(String input) {
         if (input == null || input.isEmpty()) {
             throw new RuntimeException("Empty input\n");
@@ -17,7 +21,7 @@ public class Parser {
         String[] tokens = tokenize(input);
 
         if (tokens.length == 0) {
-            throw new RuntimeException("No elements after tokenizing");
+            throw new RuntimeException("Empty input\n");
         }
 
         Stack<GrammarVariable> parseStack = new Stack<>();
@@ -72,7 +76,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Statement expected (variable, if or while)\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". grammar.variables.Statement expected (variable, if or while)\n");
                     }
                 }
                 break;
@@ -81,7 +85,7 @@ public class Parser {
                 if (dictionary.get(fToken) == Words.EQ) {
                     newState = ParseState.EXPRESSION_HOLDER;
                 } else {
-                    throw new RuntimeException("Incorrect token " + fToken + ". \"=\" expected\n");
+                    throw new RuntimeException("Incorrect token: " + token + ". \"=\" expected\n");
                 }
                 break;
             }
@@ -102,7 +106,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". Expression expected (var, const or right paren)\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". Expression expected (variable, constant or left parentheses)\n");
                     }
                 }
                 break;
@@ -145,7 +149,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". Operator or new statement or \"end\" expected\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". Operator, new statement (variable, if, while) or \"end\" expected\n");
                     }
                 }
                 break;
@@ -168,7 +172,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". Expression after operator expected\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". Expression (variable, constant or left parentheses) after operator expected\n");
                     }
                 }
                 break;
@@ -211,7 +215,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". Operator, new statement or \"end\" expected\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". Operator, new statement or \"end\" expected\n");
                     }
                 }
                 break;
@@ -234,7 +238,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". Expression after operator expected\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". Expression after operator expected\n");
                     }
                 }
                 break;
@@ -300,7 +304,7 @@ public class Parser {
                         break;
                     }
                     default: {
-                        throw new RuntimeException("Incorrect token " + token + ". grammar.variables.Expression after operator expected\n");
+                        throw new RuntimeException("Incorrect token: " + token + ". grammar.variables.Expression after operator expected\n");
                     }
                 }
                 break;
@@ -336,7 +340,7 @@ public class Parser {
                 } else if (potentialEndExpression instanceof Expression) {
                     expression4 = (Expression) potentialEndExpression;
                 } else {
-                    throw new RuntimeException("Incorrect stack content: expression or reduce lexeme on top expected: " + potentialEndExpression.getClass() + "\n");
+                    throw new RuntimeException("Incorrect stack content: expression or reduce lexeme on top expected. Got: " + potentialEndExpression.getClass() + "\n");
                 }
 
                 GrammarVariable op3 = parseStack.pop();
@@ -364,7 +368,7 @@ public class Parser {
                         }
                     }
                 } else {
-                    throw new RuntimeException("Following stack content expected: exp, op, exp, op");
+                    throw new RuntimeException("Internal error: incorrect stack content\n");
                 }
                 if (potentialEndExpression instanceof ReduceLexeme) {
                     parseStack.push(potentialEndExpression);

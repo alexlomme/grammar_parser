@@ -3,18 +3,20 @@ package parser;
 import grammar.variables.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Analyser {
+    private static final int OFFSET = 97;
+    private static final int NUMBER_OF_SYMBOLS = 26;
+
+    private Analyser() {}
 
     public static List<Assignment> analyseAssignments(Program program) {
 
         List<Assignment> unused = new ArrayList<>();
         Set<Character> defined = new HashSet<>();
-        List<Assignment>[] symbolTable = new List[26];
-
-        for (int i = 0; i < 26; i++) {
-            symbolTable[i] = new ArrayList<>();
-        }
+        List<Assignment>[] symbolTable = initializeSymbolTable();
 
         analyseStatementList((StatementList) program, symbolTable, defined, unused);
 
@@ -37,51 +39,40 @@ public class Analyser {
         if (statement instanceof Assignment assignment) {
             return analyseAssignment(assignment, symbolTable, defined, unused);
         } else if (statement instanceof IfBlock ifBlock) {
-            List<Assignment>[] localSymbolTable = new List[26];
-            for (int i = 0; i < 26; i++) {
-                localSymbolTable[i] = new ArrayList<>();
-            }
+            List<Assignment>[] localSymbolTable = initializeSymbolTable();
             Set<Character> localDefined = new HashSet<>();
 
             Set<Character> assignedBeforeIf = analyseIfBlock(ifBlock, localSymbolTable, localDefined, unused);
 
-            Set<Character> toRemove = new HashSet<>();
-            for (Character c : assignedBeforeIf) {
-                if (defined.contains(c)) {
-                    symbolTable[c - 97].clear();
-                    toRemove.add(c);
+            assignedBeforeIf = assignedBeforeIf.stream().filter(var -> {
+                if (defined.contains(var)) {
+                    symbolTable[indexOfSymbol(var)].clear();
+                    return true;
                 }
-            }
+                return false;
+            }).collect(Collectors.toSet());
 
-            assignedBeforeIf.removeAll(toRemove);
-            for (int i = 0; i < 26; i++) {
-                symbolTable[i].addAll(localSymbolTable[i]);
-            }
+            IntStream.range(0, NUMBER_OF_SYMBOLS)
+                    .forEach(index -> symbolTable[index].addAll(localSymbolTable[index]));
 
 
             return assignedBeforeIf;
         } else if (statement instanceof WhileBlock whileBlock) {
-            List<Assignment>[] localSymbolTable = new List[26];
-            for (int i = 0; i < 26; i++) {
-                localSymbolTable[i] = new ArrayList<>();
-            }
+            List<Assignment>[] localSymbolTable = initializeSymbolTable();
             Set<Character> localDefined = new HashSet<>();
 
             Set<Character> assignedBeforeWhile = analyseWhileBlock(whileBlock, localSymbolTable, localDefined, unused);
 
-            Set<Character> toRemove = new HashSet<>();
-            for (Character c : assignedBeforeWhile) {
-                if (defined.contains(c)) {
-                    symbolTable[c - 97].clear();
-                    toRemove.add(c);
+            assignedBeforeWhile = assignedBeforeWhile.stream().filter(var -> {
+                if (defined.contains(var)) {
+                    symbolTable[indexOfSymbol(var)].clear();
+                    return true;
                 }
-            }
+                return false;
+            }).collect(Collectors.toSet());
 
-            assignedBeforeWhile.removeAll(toRemove);
-            for (int i = 0; i < 26; i++) {
-                symbolTable[i].addAll(localSymbolTable[i]);
-            }
-
+            IntStream.range(0, NUMBER_OF_SYMBOLS)
+                    .forEach(index -> symbolTable[index].addAll(localSymbolTable[index]));
 
             return assignedBeforeWhile;
         }
@@ -105,19 +96,19 @@ public class Analyser {
         Set<Character> variables = assignment.getExpression().getVariables();
         char name = assignment.getVariable().getName();
 
-        Set<Character> toRemove = new HashSet<>();
-        for (Character c : variables) {
-            if (defined.contains(c)) {
-                toRemove.add(c);
-                symbolTable[c - 97].clear();
+        variables = variables.stream().filter(var -> {
+            if (defined.contains(var)) {
+                symbolTable[indexOfSymbol(var)].clear();
+                return true;
             }
-        }
+            return false;
+        }).collect(Collectors.toSet());
 
-        unused.addAll(symbolTable[name - 97]);
-        symbolTable[name - 97].clear();
-        symbolTable[name - 97].add(assignment);
+        int index = indexOfSymbol(name);
+        unused.addAll(symbolTable[index]);
+        symbolTable[index].clear();
+        symbolTable[index].add(assignment);
 
-        variables.removeAll(toRemove);
         defined.add(name);
 
         return variables;
@@ -140,13 +131,23 @@ public class Analyser {
 
         Set<Character> usedBeforeBlock = analyseStatementList(listInBlock, symbolTable, defined, unused);
 
-        for (Character c : variables) {
-            symbolTable[c - 97].clear();
-        }
+        variables.forEach(var -> symbolTable[indexOfSymbol(var)].clear());
 
         variables.addAll(usedBeforeBlock);
 
         return variables;
+    }
+
+    private static int indexOfSymbol(Character c) {
+        return c - OFFSET;
+    }
+
+    private static List<Assignment>[] initializeSymbolTable() {
+        List<Assignment>[] symbolTable = new List[NUMBER_OF_SYMBOLS];
+        for (int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
+            symbolTable[i] = new ArrayList<>();
+        }
+        return symbolTable;
     }
 
 }

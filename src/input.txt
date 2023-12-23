@@ -1,0 +1,8 @@
+if a < b
+	a = 8
+	b = a - 4
+
+	if 16
+		a = a
+	end
+end
